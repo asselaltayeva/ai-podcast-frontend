@@ -37,7 +37,7 @@ export const processVideo = inngest.createFunction(
         await step.run("set-status-processing", async () => {
             await db.uploadedFile.update({
                 where: { id: uploadedFileId },
-                data: { status: "PROCESSING" },
+                data: { status: "processing" },
             });
         });
 
@@ -52,10 +52,56 @@ export const processVideo = inngest.createFunction(
         });
       });
 
-      const result = await step.run("create-clips-in-db", async () => {
+      const {clipsFound} = await step.run("create-clips-in-db", async () => {
         const folderPrefix = s3Key.split("/")[0]!;
+
+        const allKeys = await listS3ObjectsByPrefix(folderPrefix);
+
+        const clipKeys = allKeys.filter(
+            (key): key is string =>
+                key!== undefined && !key.endsWith ("original.mp4")
+        );
+
+        if (clipKeys.length > 0){
+            await db.clip.createMany({
+                data: clipKeys.map((clipKey) => ({
+                    s3Key: clipKey,
+                    uploadedFileId,
+                    userId,
+                })),
+            });
+        }
+        return {clipsFound : clipKeys.length};
     });
-    }
+
+    await step.run("deduct-credits", async () => {
+        await db.user.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                credits: {
+                    decrement: Math.min(credits, clipsFound),
+                },
+            },
+        });
+    });
+
+    await step.run("set-status-processed", async () => {
+        await db.uploadedFile.update({
+            where: { id: uploadedFileId },
+            data: { status: "processed" },
+        });
+    });
+} else {
+    await step.run("set-status-no-credits", async () => {
+        await db.uploadedFile.update({
+            where: { id: uploadedFileId },
+            data: { status: "no credits" },
+        });
+    });
+}
+
     }, 
 );
 
