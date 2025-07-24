@@ -11,18 +11,14 @@ import {
 import { Label } from "@radix-ui/react-label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import {z} from "zod";
 import {useForm} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import Link from "next/link";
-
-const signupSchema = z.object({
-    email: z.string().email("Please, enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
-})
-
-type SignupFormValues = z.infer<typeof signupSchema>;
+import { signIn } from "next-auth/react";
+import { signupSchema,  type SignupFormValues } from "~/schemas/auth";
+import { signUp } from "~/actions/auth";
+import { useRouter } from "next/navigation";
 
 export function SignupForm({
   className,
@@ -30,14 +26,41 @@ export function SignupForm({
 }: React.ComponentProps<"div">) {
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
 
     const {register, handleSubmit, formState:{errors}} = useForm <SignupFormValues>({
         resolver: zodResolver(signupSchema),
     });
 
     const onSubmit = async (data: SignupFormValues) => {
+        try {
+            setIsSubmitting(true);
+            setError(null);
 
-    }
+            const result = await signUp(data);
+            if (!result.success) {
+                setError(result.error || "An error occurred while signing up.");
+                return;
+            }
+
+            const signInResult = await signIn("credentials", {
+                email: data.email,
+                password: data.password,
+                redirect: false,
+            });
+
+            if (signInResult?.error) {
+                setError("Account created, but failed to log in. Please try again.");
+            } else {
+                router.push("/dashboard");
+            }
+
+        } catch (error) {
+            setError("An error occurred while signing up. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
   return ( 
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -87,8 +110,13 @@ export function SignupForm({
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? "Signing up..." : "Sign up"}
                 </Button>
-                <Button variant="outline" className="w-full">
-                  Sign up with Google
+                <Button
+                    variant="outline"
+                    className="w-full"
+                    type="button"
+                    onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                >
+                    Sign up with Google
                 </Button>
               </div>
             </div>
