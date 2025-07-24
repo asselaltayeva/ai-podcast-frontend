@@ -1,8 +1,9 @@
+import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { comparePasswords } from "~/lib/auth";
-
+import GoogleProvider from "next-auth/providers/google";
 import { db } from "~/server/db";
 
 /**
@@ -62,6 +63,10 @@ export const authConfig = {
       return user;
     }
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    }),
   ],
 
   session: {strategy: "jwt"},
@@ -82,3 +87,6 @@ export const authConfig = {
     }
   },
 } satisfies NextAuthConfig;
+
+const handler = NextAuth(authConfig);
+export { handler as GET, handler as POST };
