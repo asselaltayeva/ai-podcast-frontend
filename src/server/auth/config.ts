@@ -34,23 +34,23 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-   CredentialsProvider({
-    name: "Credentials",
-    credentials: {
-      email: { label: "Email", type: "email"},
-      password: { label: "Password", type: "password" },
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
-    async authorize(credentials) {
-      if (!credentials?.email || !credentials?.password) {
-        return null;
-      }
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
 
-      const email = credentials.email as string;
-      const password = credentials.password as string;
+        const email = credentials.email as string;
+        const password = credentials.password as string;
 
-      const user = await db.user.findUnique({
-        where: { email },
-      });
+        const user = await db.user.findUnique({
+          where: { email },
+        });
 
       if (!user) {
         return null;
@@ -87,6 +87,3 @@ export const authConfig = {
     }
   },
 } satisfies NextAuthConfig;
-
-const handler = NextAuth(authConfig);
-export { handler as GET, handler as POST };
