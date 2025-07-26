@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Label } from "@radix-ui/react-label";
+
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
@@ -18,6 +18,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { loginSchema, signupSchema, type LoginFormValues, type SignupFormValues } from "~/schemas/auth"; // Optionally replace with `loginSchema`
 import { useRouter } from "next/navigation";
+import { Label } from "./ui/label";
 
 export function LoginForm({
   className,

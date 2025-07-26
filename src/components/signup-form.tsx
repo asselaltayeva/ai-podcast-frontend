@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Label } from "@radix-ui/react-label";
+
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import {useForm} from "react-hook-form";
@@ -19,6 +19,7 @@ import { signIn } from "next-auth/react";
 import { signupSchema,  type SignupFormValues } from "~/schemas/auth";
 import { signUp } from "~/actions/auth";
 import { useRouter } from "next/navigation";
+import { Label } from "./ui/label";
 
 export function SignupForm({
   className,
