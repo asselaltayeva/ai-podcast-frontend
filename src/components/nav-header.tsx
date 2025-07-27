@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { DropdownMenuItem, DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
+import { signOut } from "next-auth/react";
+
 
 const NavHeader = ({credits,email} : {
     credits: number;
@@ -44,9 +45,14 @@ const NavHeader = ({credits,email} : {
                     <DropdownMenuLabel>
                         <p className="text-muted-foreground text-xs ">{email}</p>
                     </DropdownMenuLabel>
+
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                        <Link href="/dashboard/billing">Billings</Link>
+                    <DropdownMenuItem asChild>
+                        <Link href="/dashboard/billing">Billing</Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick= {() => signOut({redirectTo: "/dashboard"})}className="text-destructive cursor-pointer">Sign out
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
