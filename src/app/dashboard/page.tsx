@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { DashboardClient } from "~/components/dashboard-client";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 
@@ -9,8 +10,6 @@ export default async function DashboardPage() {
     if (!session?.user?.id) {
         redirect("/login");
     }
-
-    await new Promise((res) => setTimeout(res, 5000));
 
     //database query to fetch user data
     const userData = await db.user.findUniqueOrThrow({
@@ -45,19 +44,13 @@ export default async function DashboardPage() {
         id: file.id,
         s3Key: file.s3Key,
         filename: file.displayName || "Unknown File Name", 
-        createdAt: file.createdAt.toLocaleDateString(),
+        createdAt: file.createdAt,
         status: file.status,
         clipsCount: file._count.clips,
     }) )
 
 
     return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-        <p>Welcome to your dashboard!</p>
-        {/* Add more dashboard content here */}
-      </div>
-    </div>
+        <DashboardClient uploadedFiles={formattedFiles} clips={userData.clips} />
   );
 }
