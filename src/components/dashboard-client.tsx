@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import Dropzone, { type DropzoneState } from "shadcn-dropzone";
-import { UploadCloud } from "lucide-react";
+import { Loader2, UploadCloud } from "lucide-react";
 import { useState } from "react";
 
 export function DashboardClient({
@@ -29,6 +29,21 @@ export function DashboardClient({
     const handleDrop = (acceptedFiles: File[]) => {
         setFiles(acceptedFiles);
     };
+
+    const handleUpload = async () => {
+        if (files.length === 0) return;
+
+        const file = files[0]!;
+        setUploading(true);
+
+        try{
+            
+        } catch (error) {
+
+        } finally {
+            
+        }
+    }
 
     return (
         <div className="mx-auto flex max-w-5xl flex-col space-y-6 px-4 py-8">
@@ -59,33 +74,36 @@ export function DashboardClient({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Dropzone
-                                onDrop={handleDrop}
-                                accept={{ "video/*": [".mp4"] }}
-                                maxSize={500 * 1024 * 1024}
-                                disabled={uploading}
-                                maxFiles={1}
+                        <Dropzone
+                        onDrop={handleDrop}
+                        accept={{ "video/*": [".mp4"] }}
+                        maxSize={500 * 1024 * 1024}
+                        disabled={uploading}
+                        maxFiles={1}
+                        >
+                        {(dropzone: DropzoneState) => (
+                            <div
+                                {...dropzone.getRootProps()}
+                                className="flex flex-col items-center justify-center space-y-4 rounded-lg p-10 text-center border border-dashed border-muted cursor-pointer"
                             >
-                                {(dropzone: DropzoneState) => (
-                                    <div className="flex flex-col items-center justify-center space-y-4 rounded-lg p-10 text-center">
-                                        <UploadCloud className="text-muted-foreground h-12 w-12" />
-                                        <p className="font-medium">Drag and drop your file</p>
-                                        <p className="text-muted-foreground text-sm">or click to browse (MP4 up to 500MB)</p>
-                                        <Button
-                                            variant="default"
-                                            size="sm"
-                                            disabled={uploading}
-                                            {...dropzone.getRootProps()}
-                                        >
-                                            Select File
-                                        </Button>
-                                        <input {...dropzone.getInputProps()} />
-                                    </div>
-                                )}
-                            </Dropzone>
+                                <UploadCloud className="text-muted-foreground h-12 w-12" />
+                                <p className="font-medium">Drag and drop your file</p>
+                                <p className="text-muted-foreground text-sm">
+                                    or click to browse (MP4 up to 500MB)
+                                </p>
+                                <Button variant="default" size="sm" disabled={uploading}>
+                                    Select File
+                                </Button>
+                                <input {...dropzone.getInputProps()} />
+                            </div>
+                        )}
+                    </Dropzone>
 
+
+                            <div className="flex items-start justify-between">
+                            <div>
                             {files.length > 0 && (
-                                <div className="mt-4 space-y-1 text-sm">
+                                <div className="space-y-1 text-sm">
                                     <p className="font-medium">Selected file:</p>
                                     {files.map((file) => (
                                         <p className="text-muted-foreground" key={file.name}>
@@ -94,6 +112,19 @@ export function DashboardClient({
                                     ))}
                                 </div>
                             )}
+                            </div>
+                            <Button className={files.length === 0 ? "opacity-50 cursor-not-allowed" : ""}
+                            onClick={handleUpload}>
+                                {uploading ? (
+                                    <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                    Uploading...
+                                    </>
+                                ) :(
+                                    "Upload"
+                                )}
+                            </Button>
+                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
