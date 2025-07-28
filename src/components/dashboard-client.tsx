@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import Dropzone, { type DropzoneState } from "shadcn-dropzone";
 import { Loader2, UploadCloud } from "lucide-react";
 import { useState } from "react";
+import { generateUploadUrl } from "~/actions/s3";
+import { toast } from "sonner";
 
 export function DashboardClient({
     uploadedFiles,
@@ -37,11 +39,39 @@ export function DashboardClient({
         setUploading(true);
 
         try{
-            
-        } catch (error) {
+            const {success, signedUrl, uploadedFileId} = await generateUploadUrl({
+                filename: file.name,
+                contentType: file.type,
+            });
+            if (!success) {
+                throw new Error("Failed to generate upload URL");
+            }
 
-        } finally {
+            const uploadResponse = await fetch(signedUrl, {
+                method: "PUT",
+                body: file,
+                headers: {
+                    "Content-Type": file.type,
+                },
+            });
+
+            if (!uploadResponse.ok) {
+                throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+            }
+
+            setFiles([]);
+
+            toast.success("File uploaded successfully!", {
+                description: "Your podcast file is being scheduled for processing. Check the status: ",
+                duration: 5000,
+            });
+        } catch (error) {
+            toast.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`, {
+                description: "Please try again or contact support if the issue persists.",
+            });
             
+        } finally {
+
         }
     }
 
