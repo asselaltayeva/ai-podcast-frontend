@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { inngest } from "~/inngest/client";
 import { db } from "~/server/db";
 
@@ -29,4 +30,6 @@ export async function processVideo(uploadedFileId : string){
             uploaded: true,
         },
     });
+
+    revalidatePath("/dashboard");
 }

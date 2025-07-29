@@ -6,10 +6,15 @@ import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import Dropzone, { type DropzoneState } from "shadcn-dropzone";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Loader2, UploadCloud } from "lucide-react";
 import { useState } from "react";
 import { generateUploadUrl } from "~/actions/s3";
 import { toast } from "sonner";
+import { processVideo } from "~/actions/generation";
+import { Badge } from "./ui/badge";
+import { set } from "zod";
+import { useRouter } from "next/navigation";
 
 export function DashboardClient({
     uploadedFiles,
@@ -27,6 +32,15 @@ export function DashboardClient({
 }) {
     const [files, setFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const router = useRouter();
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        router.refresh();
+        setTimeout(() => 
+            setRefreshing(false),600);
+    };
 
     const handleDrop = (acceptedFiles: File[]) => {
         setFiles(acceptedFiles);
@@ -59,6 +73,8 @@ export function DashboardClient({
                 throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
             }
 
+            await processVideo (uploadedFileId);
+
             setFiles([]);
 
             toast.success("File uploaded successfully!", {
@@ -69,7 +85,7 @@ export function DashboardClient({
             toast.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`, {
                 description: "Please try again or contact support if the issue persists.",
             });
-            
+
         } finally {
 
         }
@@ -155,6 +171,74 @@ export function DashboardClient({
                                 )}
                             </Button>
                             </div>
+
+                            {uploadedFiles.length > 0 && (
+                                <div className="pt-6">
+                                    <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-md mb-2 font-medium">Queue status</h3>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={handleRefresh}
+                                         disabled={refreshing}>{refreshing && 
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                    </Button>
+                                    </div>
+                                    <div className="max-h-[300px] overflow-auto rounded-md border">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>File</TableHead>
+                                                    <TableHead>Uploaded</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                    <TableHead>Clips created</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+
+                                            <TableBody>
+                                                {uploadedFiles.map((item) => (
+                                                    <TableRow key={item.id}>
+                                                        <TableCell className="max-w-xs truncate font-medium"> 
+                                                            {item.filename}
+                                                        </TableCell>
+
+                                                        <TableCell className="text-muted-foreground text-sm"> 
+                                                            {new Date(item.createdAt).toLocaleDateString()}
+                                                        </TableCell>
+
+                                                        <TableCell className="max-w-xs truncate font-medium">  
+                                                            {item.status === "queued" && 
+                                                            (<Badge variant="outline">Queued</Badge>)}
+
+                                                            {item.status === "processing" && 
+                                                            (<Badge variant="outline">Processing</Badge>)}
+
+                                                            {item.status === "processed" && 
+                                                            (<Badge variant="outline">Processed</Badge>)}
+
+                                                            {item.status === "no credits" && 
+                                                            (<Badge variant="destructive">No credits</Badge>)}
+
+                                                             {item.status === "failed" && 
+                                                            (<Badge variant="destructive">Failed</Badge>)}
+
+                                                        </TableCell>
+
+                                                        <TableCell className="text-muted-foreground text-sm">
+                                                            {item.clipsCount > 0 ? 
+                                                            (<span>
+                                                                {item.clipsCount} clip{item.clipsCount !==1 ? "s" : ""}</span>) : 
+                                                            (<span className="text-muted-foreground">No clips yet</span>)}
+                                                        </TableCell>
+
+
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
