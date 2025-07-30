@@ -1,4 +1,3 @@
-import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -63,6 +62,7 @@ export const authConfig = {
       return user;
     }
     }),
+
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
@@ -84,6 +84,6 @@ export const authConfig = {
         token.id = user.id;
       }
       return token;
-    }
+    },
   },
 } satisfies NextAuthConfig;
