@@ -15,6 +15,7 @@ import { processVideo } from "~/actions/generation";
 import { Badge } from "./ui/badge";
 import { set } from "zod";
 import { useRouter } from "next/navigation";
+import { ClipDisplay } from "./clip-display";
 
 export function DashboardClient({
     uploadedFiles,
@@ -242,6 +243,21 @@ export function DashboardClient({
                         </CardContent>
                     </Card>
                 </TabsContent>
+
+                <TabsContent value="my-clips">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>My Clips</CardTitle>
+                            <CardDescription>
+                                View and manage your generated clips. Processing may take few minutes.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ClipDisplay clips={clips} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
             </Tabs>
         </div>
     );
